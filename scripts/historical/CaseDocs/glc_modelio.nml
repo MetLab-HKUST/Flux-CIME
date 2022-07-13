@@ -1,0 +1,13 @@
+&modelio
+  diri = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/glc"
+  diro = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run"
+  logfile = "glc.log.106.220707-214120"
+/
+&pio_inparm
+  pio_netcdf_format = "64bit_offset"
+  pio_numiotasks = -99
+  pio_rearranger = 1
+  pio_root = 1
+  pio_stride = 64
+  pio_typename = "netcdf"
+/

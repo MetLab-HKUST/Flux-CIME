@@ -1,0 +1,13 @@
+&modelio
+  diri = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/bld/cpl"
+  diro = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/run"
+  logfile = "cpl.log.104.220707-212850"
+/
+&pio_inparm
+  pio_netcdf_format = "64bit_offset"
+  pio_numiotasks = -99
+  pio_rearranger = 1
+  pio_root = 1
+  pio_stride = 64
+  pio_typename = "netcdf"
+/

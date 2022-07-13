@@ -1,0 +1,4 @@
+&ww3_inparm
+  initfile = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_input_datasets/wav/ww3/restart.ww3.init.seed"
+  outfreq = 0
+/

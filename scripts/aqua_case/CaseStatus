@@ -1,0 +1,94 @@
+2022-07-07 20:57:07: xmlchange success <command> ./xmlchange NTHRDS=2  </command>
+ ---------------------------------------------------
+2022-07-07 20:57:16: xmlchange success <command> ./xmlchange NTASKS=32  </command>
+ ---------------------------------------------------
+2022-07-07 20:57:20: case.setup starting 
+ ---------------------------------------------------
+2022-07-07 20:57:20: case.setup success 
+ ---------------------------------------------------
+2022-07-07 20:57:30: case.build starting 
+ ---------------------------------------------------
+2022-07-07 21:01:35: case.build error 
+ERROR: Error gathering provenance information from manage_externals.
+
+manage_externals error message:
+    ERROR:root:External externals description file "Externals.cfg" does not exist! In directory: /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice
+
+manage_externals output:
+    Processing externals description file : Externals.cfg
+    Processing externals description file : Externals_CAM.cfg
+    
+    ERROR: External externals description file "Externals.cfg" does not exist! In directory: /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice
+
+To solve this, either:
+
+(1) Find and fix the problem: From /Workspace_II/shixm/CESM/my_cesm_sandbox, try to get this command to work:
+    manage_externals/checkout_externals --status --verbose --no-logging
+
+(2) If you don't need provenance information, rebuild with --skip-provenance-check
+
+ ---------------------------------------------------
+2022-07-07 21:03:08: case.build starting 
+ ---------------------------------------------------
+2022-07-07 21:03:11: case.build success 
+ ---------------------------------------------------
+2022-07-07 21:03:34: case.submit starting 
+ ---------------------------------------------------
+2022-07-07 21:07:53: case.submit success case.run:102, case.st_archive:103
+ ---------------------------------------------------
+2022-07-07 21:07:53: case.run starting 
+ ---------------------------------------------------
+2022-07-07 21:07:53: model execution starting 
+ ---------------------------------------------------
+2022-07-07 21:07:55: model execution error 
+ERROR: Command: 'mpirun -np 32 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/bld/cesm.exe   >> cesm.log.$LID 2>&1 ' failed with error '' from dir '/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/run'
+ ---------------------------------------------------
+2022-07-07 21:07:55: case.run error 
+ERROR: RUN FAIL: Command 'mpirun -np 32 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/bld/cesm.exe   >> cesm.log.$LID 2>&1 ' failed
+See log file for details: /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/run/cesm.log.102.220707-210753
+ ---------------------------------------------------
+2022-07-07 21:22:51: build.clean starting 
+ ---------------------------------------------------
+2022-07-07 21:22:51: build.clean success 
+ ---------------------------------------------------
+2022-07-07 21:22:57: case.build starting 
+ ---------------------------------------------------
+2022-07-07 21:27:01: case.build error 
+ERROR: Error gathering provenance information from manage_externals.
+
+manage_externals error message:
+    ERROR:root:External externals description file "Externals.cfg" does not exist! In directory: /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice
+
+manage_externals output:
+    Processing externals description file : Externals.cfg
+    Processing externals description file : Externals_CAM.cfg
+    
+    ERROR: External externals description file "Externals.cfg" does not exist! In directory: /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice
+
+To solve this, either:
+
+(1) Find and fix the problem: From /Workspace_II/shixm/CESM/my_cesm_sandbox, try to get this command to work:
+    manage_externals/checkout_externals --status --verbose --no-logging
+
+(2) If you don't need provenance information, rebuild with --skip-provenance-check
+
+ ---------------------------------------------------
+2022-07-07 21:28:40: case.build starting 
+ ---------------------------------------------------
+2022-07-07 21:28:43: case.build success 
+ ---------------------------------------------------
+2022-07-07 21:28:49: case.submit starting 
+ ---------------------------------------------------
+2022-07-07 21:28:49: case.submit success case.run:104, case.st_archive:105
+ ---------------------------------------------------
+2022-07-07 21:28:50: case.run starting 
+ ---------------------------------------------------
+2022-07-07 21:28:51: model execution starting 
+ ---------------------------------------------------
+2022-07-07 21:28:53: model execution error 
+ERROR: Command: 'mpirun -np 32 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/bld/cesm.exe   >> cesm.log.$LID 2>&1 ' failed with error '' from dir '/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/run'
+ ---------------------------------------------------
+2022-07-07 21:28:53: case.run error 
+ERROR: RUN FAIL: Command 'mpirun -np 32 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/bld/cesm.exe   >> cesm.log.$LID 2>&1 ' failed
+See log file for details: /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/aqua_case/run/cesm.log.104.220707-212850
+ ---------------------------------------------------

@@ -1,0 +1,13 @@
+&modelio
+  diri = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/esp"
+  diro = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run"
+  logfile = "esp.log.106.220707-214120"
+/
+&pio_inparm
+  pio_netcdf_format = ""
+  pio_numiotasks = -99
+  pio_rearranger = -99
+  pio_root = -99
+  pio_stride = -99
+  pio_typename = "nothing"
+/

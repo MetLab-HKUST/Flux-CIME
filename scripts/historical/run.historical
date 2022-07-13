@@ -1,0 +1,32 @@
+Setting Environment OMP_STACKSIZE=4096M
+Generating namelists for /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/scripts/historical
+Creating component namelists
+  2022-07-07 21:41:20 atm 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cam//cime_config/buildnml
+CAM namelist copy: file1 /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/scripts/historical/Buildconf/camconf/atm_in file2 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run/atm_in 
+  2022-07-07 21:41:21 lnd 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/components/clm//cime_config/buildnml
+  2022-07-07 21:41:21 ice 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice//cime_config/buildnml
+  2022-07-07 21:41:21 ocn 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/components/pop//cime_config/buildnml
+  2022-07-07 21:41:21 rof 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/components/mosart//cime_config/buildnml
+  2022-07-07 21:41:21 glc 
+   Running /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cism//cime_config/buildnml 
+  2022-07-07 21:41:23 wav 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/components/ww3//cime_config/buildnml
+  2022-07-07 21:41:23 iac 
+   Running /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/src/components/stub_comps_mct/siac/cime_config/buildnml 
+  2022-07-07 21:41:23 esp 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/src/components/stub_comps_mct/sesp/cime_config/buildnml
+  2022-07-07 21:41:23 cpl 
+   Calling /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/src/drivers/mct/cime_config/buildnml
+-------------------------------------------------------------------------
+ - Prestage required restarts into /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run
+ - Case input data directory (DIN_LOC_ROOT) is /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_input_datasets 
+ - Checking for required input datasets in DIN_LOC_ROOT
+-------------------------------------------------------------------------
+run command is mpirun -np 24 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/cesm.exe   >> cesm.log.$LID 2>&1  
+ERROR: RUN FAIL: Command 'mpirun -np 24 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/cesm.exe   >> cesm.log.$LID 2>&1 ' failed
+See log file for details: /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run/cesm.log.106.220707-214120

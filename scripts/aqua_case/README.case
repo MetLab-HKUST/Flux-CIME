@@ -1,0 +1,50 @@
+2022-07-07 20:56:46: ./create_newcase --case aqua_case --compset QPC6 --res f09_f09_mg17 --machine MetLab2
+ ---------------------------------------------------
+2022-07-07 20:56:46: Compset longname is 2000_CAM60_SLND_SICE_DOCN%AQP3_SROF_SGLC_SWAV_SIAC_SESP
+ ---------------------------------------------------
+2022-07-07 20:56:46: Compset specification file is /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cam//cime_config/config_compsets.xml
+ ---------------------------------------------------
+2022-07-07 20:56:46: Pes     specification file is /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cam//cime_config/config_pes.xml
+ ---------------------------------------------------
+2022-07-07 20:56:46: Forcing is 1972-2004
+ ---------------------------------------------------
+2022-07-07 20:56:46: Using None coupler instances
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component ATM is CAM cam6 physics:
+ ---------------------------------------------------
+2022-07-07 20:56:46: ATM_GRID is 0.9x1.25
+ ---------------------------------------------------
+2022-07-07 20:56:46: This component includes user_mods /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cam//cime_config/usermods_dirs/aquap
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component LND is Stub land component
+ ---------------------------------------------------
+2022-07-07 20:56:46: LND_GRID is null
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component ICE is Stub ice component
+ ---------------------------------------------------
+2022-07-07 20:56:46: ICE_GRID is 0.9x1.25
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component OCN is DOCN   analytic aquaplanet sst - option 3
+ ---------------------------------------------------
+2022-07-07 20:56:46: OCN_GRID is 0.9x1.25
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component ROF is Stub river component
+ ---------------------------------------------------
+2022-07-07 20:56:46: ROF_GRID is null
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component GLC is Stub glacier (land ice) component
+ ---------------------------------------------------
+2022-07-07 20:56:46: GLC_GRID is null
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component WAV is Stub wave component
+ ---------------------------------------------------
+2022-07-07 20:56:46: WAV_GRID is null
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component IAC is Stub iac component
+ ---------------------------------------------------
+2022-07-07 20:56:46: IAC_GRID is null
+ ---------------------------------------------------
+2022-07-07 20:56:46: Component ESP is Stub external system processing (ESP) component
+ ---------------------------------------------------
+2022-07-07 20:56:46: ESP_GRID is None
+ ---------------------------------------------------
