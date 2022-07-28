@@ -141,6 +141,7 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            &               qbot  ,s16O  ,sHDO  ,s18O  ,rbot  ,   &
            &               tbot  ,us    ,vs    ,   &
            &               ts    ,mask  , seq_flux_atmocn_minwind, &
+           &               hs    ,peakcp,    &    ! XS 20220726, significant wave height and peak wave phase speed
            &               sen   ,lat   ,lwup  ,   &
            &               r16O, rhdo, r18O, &
            &               evap  ,evap_16O, evap_HDO, evap_18O, &
@@ -178,6 +179,8 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
    real(R8)   ,intent(in) :: vs   (nMax) ! ocn v-velocity        (m/s)
    real(R8)   ,intent(in) :: ts   (nMax) ! ocn temperature       (K)
    real(R8)   ,intent(in) :: seq_flux_atmocn_minwind        ! minimum wind speed for atmocn      (m/s)
+   real(R8)   ,intent(in) :: hs   (nMax) ! significant wave height (m)
+   real(R8)   ,intent(in) :: peakcp(nMax)! peak wave phase speed (m/s)
 
    !--- output arguments -------------------------------
    real(R8),intent(out)  ::  sen  (nMax) ! heat flux: sensible    (W/m^2)
@@ -226,7 +229,7 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
    real(R8)    :: rh     ! sqrt of exchange coefficient (heat)
    real(R8)    :: re     ! sqrt of exchange coefficient (water)
    real(R8)    :: ustar  ! ustar
-   real(r8)     :: ustar_prev
+   real(r8)    :: ustar_prev
    real(R8)    :: qstar  ! qstar
    real(R8)    :: tstar  ! tstar
    real(R8)    :: hol    ! H (at zbot) over L
@@ -247,7 +250,9 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
    real(R8)    :: zo,zot,zoq      ! roughness lengths
    real(R8)    :: hsb,hlb         ! sens & lat heat flxs at zbot
    real(R8) :: trf,qrf,urf,vrf ! reference-height quantities
-
+!!++ XS 20220728
+   real(R8) :: von ! phys. params
+   real(R8) :: waveage  ! wave age 
 
     !--- local functions --------------------------------
    real(R8)    :: qsat   ! function: the saturation humididty of air (kg/m^3)
@@ -308,6 +313,9 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
 
   !--- for cold air outbreak calc --------------------------------
    tdiff= tbot - ts
+
+  ! XS 20220728
+   von = 0.4_R8
 
 !!.................................................................
 !! ocn_surface_flux_scheme = 0 : Default CESM1.2
@@ -370,11 +378,30 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            psixh  = -5.0_R8*hol*stable + (1.0_R8-stable)*psixhu(xqq)
 
            !--- shift wind speed using old coefficient ---
-           rd   = rdn / (1.0_R8 + rdn/loc_karman*(alz-psimh))
+           rd   = rdn / (1.0_R8 + rdn/loc_karman*(alz-psimh))   
+           ! this line is override by the line for rd below, but let's keep it to have
+           ! an output of u10n. XS 20220728
            u10n = vmag * rd / rdn
 
            !--- update transfer coeffs at 10m and neutral stability ---
-           rdn = sqrt(cdn(u10n))
+           !---------------
+           ! XS add wave dependency 20220728
+           ! rdn = sqrt(cdn(u10n))    ! original option of CAM
+           waveage = peakcp / max(ustar, 0.001_R8)
+           ! calculate the "rough-flow" component
+           if (waveage .lt. 12.0_R8) then
+              zo = 4.54_R8 * waveage**(-3.90_R8) * hs 
+           else if (waveage .lt. 30.0_R8) then 
+              zo = 5.61e-3_R8 * waveage**(-1.20_R8) * hs 
+           else
+              zo = 1.57e-5_R8 * sqrt(waveage) * hs
+           end if
+           ! add the smooth flow component
+           zo = zo + 0.11_R8 * 1.455e-5_R8 / max(ustar, 0.001_R8)
+           ! zo = min(zo, 2.85e-3_R8)    ! Lin et al. (2021 JGR Oceans,  https://doi.org/10.1029/2021JC017609) 
+                                         ! suggests this capping, probably not necessary for low-resolution climate model?
+           rdn = von / log(zref / zo)
+           !----------------
            ren = 0.0346_R8 !cexcd
            rhn = (1.0_R8-stable)*0.0327_R8 + stable * 0.018_R8
                  !(1.0_R8-stable) * chxcdu + stable * chxcds

@@ -193,6 +193,7 @@ module cime_comp_mod
   type(mct_aVect) , pointer :: o2x_ax(:) => null()
   type(mct_aVect) , pointer :: xao_ox(:) => null()
   type(mct_aVect) , pointer :: xao_ax(:) => null()
+  type(mct_aVect) , pointer :: w2x_ox(:) => null()    ! XS 20220727, port w2x to flux calculation
 
   !- from component type (single instance inside array of components)
   type(mct_aVect) , pointer :: o2x_ox => null()
@@ -2319,10 +2320,13 @@ contains
                 eai = mod((exi-1),num_inst_atm) + 1
                 eoi = mod((exi-1),num_inst_ocn) + 1
                 efi = mod((exi-1),num_inst_frc) + 1
+                ewi = mod((exi-1),num_inst_wav) + 1    ! XS 20220727                
                 a2x_ax => component_get_c2x_cx(atm(eai))
                 o2x_ax => prep_atm_get_o2x_ax()    ! array over all instances
                 xao_ax => prep_aoflux_get_xao_ax() ! array over all instances
-                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ax, o2x_ax(eoi), xao_ax(exi))
+                ! w2x_ax => prep_atm_get_w2x_ax()    ! This function has not been created yet
+                w2x_ox => prep_ocn_get_w2x_ox()    ! XS 20220727; should be the line above, use w2x_ox here as dummy
+                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ax, o2x_ax(eoi), xao_ax(exi), w2x_ox(ewi))    ! add w2x_ox, which should actually be w2x_ax. XS 20220727
              enddo
              call t_drvstopf  ('CPL:atmocna_fluxa')
 
@@ -2339,10 +2343,12 @@ contains
                 eai = mod((exi-1),num_inst_atm) + 1
                 eoi = mod((exi-1),num_inst_ocn) + 1
                 efi = mod((exi-1),num_inst_frc) + 1
+                ewi = mod((exi-1),num_inst_wav) + 1    ! XS 20220727
                 a2x_ox => prep_ocn_get_a2x_ox()
                 o2x_ox => component_get_c2x_cx(ocn(eoi))
                 xao_ox => prep_aoflux_get_xao_ox()
-                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ox(eai), o2x_ox, xao_ox(exi))
+                w2x_ox => prep_ocn_get_w2x_ox()    ! XS 20220727
+                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ox(eai), o2x_ox, xao_ox(exi), w2x_ox(ewi))   ! add w2x_ox, XS 20220727
              enddo
              call t_drvstopf  ('CPL:atmocnp_fluxo',hashint=hashint(6))
           endif
@@ -2800,10 +2806,12 @@ contains
                 eai = mod((exi-1),num_inst_atm) + 1
                 eoi = mod((exi-1),num_inst_ocn) + 1
                 efi = mod((exi-1),num_inst_frc) + 1
+                ewi = mod((exi-1),num_inst_wav) + 1    ! XS 20220721                
                 a2x_ax => component_get_c2x_cx(atm(eai))
                 o2x_ax => prep_atm_get_o2x_ax()    ! array over all instances
                 xao_ax => prep_aoflux_get_xao_ax() ! array over all instances
-                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ax, o2x_ax(eoi), xao_ax(exi))
+                w2x_ox => prep_ocn_get_w2x_ox()    ! XS 20220721. This should be w2x_ax. This is a dummy for now                
+                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ax, o2x_ax(eoi), xao_ax(exi), w2x_ox(ewi))    ! w2x_ox should be w2x_ax. It is used as a dummy for now
              enddo
              call t_drvstopf  ('CPL:atmocna_fluxa')
 
@@ -2820,10 +2828,12 @@ contains
                 eai = mod((exi-1),num_inst_atm) + 1
                 eoi = mod((exi-1),num_inst_ocn) + 1
                 efi = mod((exi-1),num_inst_frc) + 1
+                ewi = mod((exi-1),num_inst_wav) + 1    ! XS 20220721
                 a2x_ox => prep_ocn_get_a2x_ox()
                 o2x_ox => component_get_c2x_cx(ocn(eoi))
                 xao_ox => prep_aoflux_get_xao_ox()
-                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ox(eai), o2x_ox, xao_ox(exi))
+                w2x_ox => prep_ocn_get_w2x_ox()    ! XS 20220721
+                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ox(eai), o2x_ox, xao_ox(exi), w2x_ox(ewi))    ! add w2x_ox, XS 20220727
              enddo
              call t_drvstopf  ('CPL:atmocnp_fluxo')
              !         else if (trim(aoflux_grid) == 'atm') then
@@ -3175,10 +3185,12 @@ contains
                 eai = mod((exi-1),num_inst_atm) + 1
                 eoi = mod((exi-1),num_inst_ocn) + 1
                 efi = mod((exi-1),num_inst_frc) + 1
+                ewi = mod((exi-1),num_inst_wav) + 1    ! XS 20220727                
                 a2x_ax => component_get_c2x_cx(atm(eai))
                 o2x_ax => prep_atm_get_o2x_ax()    ! array over all instances
                 xao_ax => prep_aoflux_get_xao_ax() ! array over all instances
-                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ax, o2x_ax(eoi), xao_ax(exi))
+                w2x_ox => prep_ocn_get_w2x_ox()    ! XS 20220727    dummy line. It should become w2x_ax in the future                
+                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ax, o2x_ax(eoi), xao_ax(exi), w2x_ox(ewi))    ! XS 20220727 w2x_ox is dummy
              enddo
              call t_drvstopf  ('CPL:atmocna_fluxa')
 
@@ -3195,10 +3207,12 @@ contains
                 eai = mod((exi-1),num_inst_atm) + 1
                 eoi = mod((exi-1),num_inst_ocn) + 1
                 efi = mod((exi-1),num_inst_frc) + 1
+                ewi = mod((exi-1),num_inst_wav) + 1    ! XS 20220727
                 a2x_ox => prep_ocn_get_a2x_ox()
                 o2x_ox => component_get_c2x_cx(ocn(eoi))
                 xao_ox => prep_aoflux_get_xao_ox()
-                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ox(eai), o2x_ox, xao_ox(exi))
+                w2x_ox => prep_ocn_get_w2x_ox()    ! XS 20220727
+                call seq_flux_atmocn_mct(infodata, tod, dtime, a2x_ox(eai), o2x_ox, xao_ox(exi), w2x_ox(ewi))   ! XS 20220727 add w2x_ox
              enddo
              call t_drvstopf  ('CPL:atmocnp_fluxo')
           endif  ! aoflux_grid

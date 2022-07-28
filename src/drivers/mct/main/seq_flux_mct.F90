@@ -77,6 +77,9 @@ module seq_flux_mct
   real(r8), allocatable :: swup   (:) ! short wave, upward
   real(r8), allocatable :: prec   (:) ! precip
 
+  real(r8), allocatable ::  hs (:)    ! significant wave height    XS 20220727
+  real(r8), allocatable ::  peakcp (:)! peak wave phase speed      XS 20220727 
+
   ! Diurnal cycle variables wrt flux
 
   real(r8), allocatable :: tbulk      (:) ! diagnostic: ocn bulk T
@@ -185,6 +188,8 @@ module seq_flux_mct
   integer :: index_xao_So_qsolinc_diurn
   integer :: index_xao_So_windinc_diurn
   integer :: index_xao_So_ninc_diurn
+  integer :: index_w2x_Sw_hs    ! XS 20220727 add for wave dependency
+  integer :: index_w2x_Sw_peakcp    ! XS 20220727
 
   character(len=16) :: fluxsetting = 'unknown'
   character(len=*),parameter  :: fluxsetting_atmocn = 'atmocn'
@@ -232,7 +237,7 @@ contains
     allocate( ubot(nloc),stat=ier)
     if(ier/=0) call mct_die(subName,'allocate ubot',ier)
     ubot = 0.0_r8
-    allocate( vbot(nloc))
+    allocate( vbot(nloc),stat=ier)
     if(ier/=0) call mct_die(subName,'allocate vbot',ier)
     vbot = 0.0_r8
     allocate(thbot(nloc),stat=ier)
@@ -286,6 +291,15 @@ contains
     allocate(roce_18O(nloc),stat=ier)
     if(ier/=0) call mct_die(subName,'allocate roce_18O',ier)
     roce_18O = 0.0_r8
+
+    !------------
+    allocate( hs(nloc),stat=ier)
+    if(ier/=0) call mct_die(subName,'allocate hs',ier)
+    hs = 0.0_r8
+    allocate( peakcp(nloc),stat=ier)
+    if(ier/=0) call mct_die(subName,'allocate peakcp',ier)
+    peakcp = 0.0_r8
+    !------------ XS 20220727
 
     ! Output fields
     allocate(sen (nloc),stat=ier)
@@ -1109,6 +1123,7 @@ contains
        call shr_flux_atmocn (nloc_a2o , zbot , ubot, vbot, thbot, &
             shum , shum_16O , shum_HDO, shum_18O, dens , tbot, uocn, vocn , &
             tocn , emask, seq_flux_atmocn_minwind, &
+            hs  , peakcp,  &     !  XS 20220726, significant wave height and peak wave phase speed
             sen , lat , lwup , &
             roce_16O, roce_HDO, roce_18O,    &
             evap , evap_16O, evap_HDO, evap_18O, taux, tauy, tref, qref , &
@@ -1255,7 +1270,7 @@ contains
 
   !===============================================================================
 
-  subroutine seq_flux_atmocn_mct(infodata, tod, dt, a2x, o2x, xao)
+  subroutine seq_flux_atmocn_mct(infodata, tod, dt, a2x, o2x, xao, w2x)    ! XS 20220727 add w2x
 
     !-----------------------------------------------------------------------
     !
@@ -1266,6 +1281,7 @@ contains
     type(mct_aVect)         , intent(in)         :: a2x  ! a2x_ax or a2x_ox
     type(mct_aVect)         , intent(in)         :: o2x  ! o2x_ax or o2x_ox
     type(mct_aVect)         , intent(inout)      :: xao
+    type(mct_aVect)         , intent(in)         :: w2x  ! w2x_ox (w2x_ax does not work for now) XS 20220727    
     !
     ! Local variables
     !
@@ -1360,6 +1376,9 @@ contains
        index_a2x_Faxa_snowc= mct_aVect_indexRA(a2x,'Faxa_snowc')
        index_a2x_Faxa_snowl= mct_aVect_indexRA(a2x,'Faxa_snowl')
 
+       index_w2x_Sw_hs     = mct_aVect_indexRA(w2x,'Sw_hs')      ! XS 20220727
+       index_w2x_Sw_peakcp = mct_aVect_indexRA(w2x,'Sw_peakcp')  ! XS 20220727
+
        index_o2x_So_t      = mct_aVect_indexRA(o2x,'So_t')
        index_o2x_So_u      = mct_aVect_indexRA(o2x,'So_u')
        index_o2x_So_v      = mct_aVect_indexRA(o2x,'So_v')
@@ -1416,6 +1435,9 @@ contains
           prec(n) =   0.0_r8
           fswpen(n)=  0.0_r8
           ocnsal(n)=  0.0_r8
+
+          hs(n) =   0.0_r8 ! significant wave height     ~ m        ! XS 20220727
+          peakcp(n) =   0.0_r8 ! peak wave phase speed   ~ m/s      ! XS 20220727
 
           warm       (n) = 0.0_r8
           salt       (n) = 0.0_r8
@@ -1474,6 +1496,9 @@ contains
                   & + a2x%rAttr(index_a2x_Faxa_snowl,n)
              fswpen(n)= o2x%rAttr(index_o2x_So_fswpen ,n)
              ocnsal(n)= o2x%rAttr(index_o2x_So_s      ,n)
+
+             hs(n) = w2x%rAttr(index_w2x_Sw_hs    ,n)
+             peakcp(n) = w2x%rAttr(index_w2x_Sw_hs,n)
 
              warm       (n) = xao%rAttr(index_xao_So_warm_diurn      ,n)
              salt       (n) = xao%rAttr(index_xao_So_salt_diurn      ,n)
@@ -1536,6 +1561,7 @@ contains
        call shr_flux_atmocn (nloc , zbot , ubot, vbot, thbot, &
             shum , shum_16O , shum_HDO, shum_18O, dens , tbot, uocn, vocn , &
             tocn , emask, seq_flux_atmocn_minwind, &
+            hs  , peakcp,    &    ! XS 20220726, significant wave height and peak wave phase speed
             sen , lat , lwup , &
             roce_16O, roce_HDO, roce_18O,    &
             evap , evap_16O, evap_HDO, evap_18O, taux , tauy, tref, qref , &

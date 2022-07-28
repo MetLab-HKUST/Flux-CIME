@@ -2225,6 +2225,23 @@ contains
     attname  = 'Sw_hstokes'
     call metadata_set(attname, longname, stdname, units)
 
+    ! XS 20220726 add data to be sent to coupler
+    call seq_flds_add(w2x_states,'Sw_hs')
+    ! call seq_flds_add(x2o_states,'Sw_hs')    
+    longname = 'Significant wave height'
+    stdname  = 'wave_model_significant_wave_height'
+    units    = 'm'
+    attname  = 'Sw_hs'
+    call metadata_set(attname, longname, stdname, units)
+
+    call seq_flds_add(w2x_states,'Sw_peakcp')
+    ! call seq_flds_add(x2o_states,'Sw_peakcp')    
+    longname = 'Peak wave phase speed'
+    stdname  = 'wave_model_peak_wave_phase_speed'
+    units    = 'm/s'
+    attname  = 'Sw_peakcp'
+    call metadata_set(attname, longname, stdname, units)
+
     !-----------------------------
     ! New xao_states diagnostic
     ! fields for history output only
