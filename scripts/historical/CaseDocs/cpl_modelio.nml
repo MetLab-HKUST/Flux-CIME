@@ -1,7 +1,7 @@
 &modelio
   diri = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/cpl"
   diro = "/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run"
-  logfile = "cpl.log.106.220707-214120"
+  logfile = "cpl.log.220729-123009"
 /
 &pio_inparm
   pio_netcdf_format = "64bit_offset"

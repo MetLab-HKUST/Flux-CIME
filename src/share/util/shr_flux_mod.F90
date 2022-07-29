@@ -387,14 +387,14 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            !---------------
            ! XS add wave dependency 20220728
            ! rdn = sqrt(cdn(u10n))    ! original option of CAM
-           waveage = peakcp / max(ustar, 0.001_R8)
+           waveage = peakcp(n) / max(ustar, 0.001_R8)
            ! calculate the "rough-flow" component
            if (waveage .lt. 12.0_R8) then
-              zo = 4.54_R8 * waveage**(-3.90_R8) * hs 
+              zo = 4.54_R8 * waveage**(-3.90_R8) * hs(n) 
            else if (waveage .lt. 30.0_R8) then 
-              zo = 5.61e-3_R8 * waveage**(-1.20_R8) * hs 
+              zo = 5.61e-3_R8 * waveage**(-1.20_R8) * hs(n)
            else
-              zo = 1.57e-5_R8 * sqrt(waveage) * hs
+              zo = 1.57e-5_R8 * sqrt(waveage) * hs(n)
            end if
            ! add the smooth flow component
            zo = zo + 0.11_R8 * 1.455e-5_R8 / max(ustar, 0.001_R8)

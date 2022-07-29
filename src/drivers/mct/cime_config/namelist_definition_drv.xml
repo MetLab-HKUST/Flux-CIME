@@ -766,7 +766,7 @@
       Iterate atmocn flux calculation a max of this value
     </desc>
     <values>
-      <value cime_model='cesm'>5</value>
+      <value cime_model='cesm'>15</value>
       <value cime_model='e3sm'>2</value>
     </values>
   </entry>

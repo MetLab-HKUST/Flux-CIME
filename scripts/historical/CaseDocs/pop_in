@@ -8,7 +8,7 @@
  tropic_distribution_type = 'cartesian'
 /
 &io_nml
- log_filename = '/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run/ocn.log.106.220707-214120'
+ log_filename = '/Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run/ocn.log.220729-123009'
  lredirect_stdout = .true.
  luse_pointer_files = .true.
  num_iotasks = 1

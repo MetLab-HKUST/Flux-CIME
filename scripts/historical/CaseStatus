@@ -258,3 +258,48 @@ ERROR: Command: 'mpirun -np 24 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_exp
 ERROR: RUN FAIL: Command 'mpirun -np 24 /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/cesm.exe   >> cesm.log.$LID 2>&1 ' failed
 See log file for details: /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/run/cesm.log.106.220707-214120
  ---------------------------------------------------
+2022-07-29 11:58:15: case.build starting 
+ ---------------------------------------------------
+2022-07-29 11:58:20: case.build error 
+ERROR: /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/src/build_scripts/buildlib.csm_share FAILED, cat /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/csm_share.bldlog.220729-115815
+ ---------------------------------------------------
+2022-07-29 11:59:03: build.clean starting 
+ ---------------------------------------------------
+2022-07-29 11:59:03: build.clean success 
+ ---------------------------------------------------
+2022-07-29 11:59:12: case.build starting 
+ ---------------------------------------------------
+2022-07-29 12:00:05: case.build error 
+ERROR: /Workspace_II/shixm/CESM/my_cesm_sandbox/cime/src/build_scripts/buildlib.csm_share FAILED, cat /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/csm_share.bldlog.220729-115912
+ ---------------------------------------------------
+2022-07-29 12:06:59: case.build starting 
+ ---------------------------------------------------
+2022-07-29 12:14:26: case.build error 
+ERROR: BUILD FAIL: buildexe failed, cat /Workspace_II/shixm/CESM/my_cesm_sandbox/cesm_experiments/historical/bld/cesm.bldlog.220729-120659
+ ---------------------------------------------------
+2022-07-29 12:29:09: case.build starting 
+ ---------------------------------------------------
+2022-07-29 12:29:22: case.build error 
+ERROR: Error gathering provenance information from manage_externals.
+
+manage_externals error message:
+    ERROR:root:External externals description file "Externals.cfg" does not exist! In directory: /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice
+
+manage_externals output:
+    Processing externals description file : Externals.cfg
+    Processing externals description file : Externals_CAM.cfg
+    
+    ERROR: External externals description file "Externals.cfg" does not exist! In directory: /Workspace_II/shixm/CESM/my_cesm_sandbox/components/cice
+
+To solve this, either:
+
+(1) Find and fix the problem: From /Workspace_II/shixm/CESM/my_cesm_sandbox, try to get this command to work:
+    manage_externals/checkout_externals --status --verbose --no-logging
+
+(2) If you don't need provenance information, rebuild with --skip-provenance-check
+
+ ---------------------------------------------------
+2022-07-29 12:30:09: case.build starting 
+ ---------------------------------------------------
+2022-07-29 12:30:15: case.build success 
+ ---------------------------------------------------
