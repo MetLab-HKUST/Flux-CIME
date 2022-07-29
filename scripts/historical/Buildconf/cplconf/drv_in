@@ -146,7 +146,7 @@
   flux_convergence = 0.01
   flux_diurnal = .false.
   flux_epbal = "off"
-  flux_max_iteration = 5
+  flux_max_iteration = 15
   force_stop_at = "month"
   glc_gnam = "gland4"
   glc_renormalize_smb = "on_if_glc_coupled_fluxes"
