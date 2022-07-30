@@ -387,7 +387,7 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            !---------------
            ! XS add wave dependency 20220728
            ! rdn = sqrt(cdn(u10n))    ! original option of CAM
-           waveage = peakcp(n) / max(ustar, 0.001_R8)
+           waveage = max(peakcp(n) / max(ustar, 0.001_R8), 0.1)
            ! calculate the "rough-flow" component
            if (waveage .lt. 12.0_R8) then
               zo = 4.54_R8 * waveage**(-3.90_R8) * hs(n) 
@@ -398,8 +398,8 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            end if
            ! add the smooth flow component
            zo = zo + 0.11_R8 * 1.455e-5_R8 / max(ustar, 0.001_R8)
-           ! zo = min(zo, 2.85e-3_R8)    ! Lin et al. (2021 JGR Oceans,  https://doi.org/10.1029/2021JC017609) 
-                                         ! suggests this capping, probably not necessary for low-resolution climate model?
+           zo = min(zo, 2.85e-3_R8)    ! Lin et al. (2021 JGR Oceans,  https://doi.org/10.1029/2021JC017609) 
+                                       ! suggests this capping
            rdn = von / log(zref / zo)
            !----------------
            ren = 0.0346_R8 !cexcd
@@ -416,8 +416,10 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            tstar = rh * delt
            qstar = re * delq
         enddo
-        if (iter < 1) then
-           write(s_logunit,*) ustar,ustar_prev,flux_con_tol,flux_con_max_iter
+        ! if (iter < 1) then
+        if (isnan(ustar) .or. iter<1) then
+           ! write(s_logunit,*) ustar,ustar_prev,flux_con_tol,flux_con_max_iter
+           write(s_logunit,*) ustar,ustar_prev,flux_con_tol,flux_con_max_iter, hs(n), peakcp(n), rdn, zo
            call shr_sys_abort('No iterations performed ' // errMsg(sourcefile, __LINE__))
         end if
         !------------------------------------------------------------
