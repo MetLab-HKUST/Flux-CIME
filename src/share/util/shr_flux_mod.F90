@@ -139,7 +139,7 @@ end subroutine shr_flux_adjust_constants
 
 SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
            &               qbot  ,s16O  ,sHDO  ,s18O  ,rbot  ,   &
-           &               tbot  ,us    ,vs    ,   &
+           &               tbot  ,pslv  ,us    ,vs    ,   &     ! XS 22/9/2022, add SLP
            &               ts    ,mask  , seq_flux_atmocn_minwind, &
            &               hs    ,peakcp,    &    ! XS 20220726, significant wave height and peak wave phase speed
            &               sen   ,lat   ,lwup  ,   &
@@ -175,6 +175,7 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
    real(R8)   ,intent(in) :: r18O (nMax) ! ocn H218O tracer ratio/Rstd
    real(R8)   ,intent(in) :: rbot (nMax) ! atm air density       (kg/m^3)
    real(R8)   ,intent(in) :: tbot (nMax) ! atm T                 (K)
+   real(R8)   ,intent(in) :: pslv (nMax) ! sea level pressure    (Pa)
    real(R8)   ,intent(in) :: us   (nMax) ! ocn u-velocity        (m/s)
    real(R8)   ,intent(in) :: vs   (nMax) ! ocn v-velocity        (m/s)
    real(R8)   ,intent(in) :: ts   (nMax) ! ocn temperature       (K)
@@ -440,15 +441,6 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
         !--- water flux ---
         evap(n) = lat(n)/loc_latvap
 
-        !---water isotope flux ---
-
-        call wiso_flxoce(2,rbot(n),zbot(n),s16O(n),ts(n),r16O(n),ustar,re,ssq,evap_16O(n), &
-                         qbot(n),evap(n))
-        call wiso_flxoce(3,rbot(n),zbot(n),sHDO(n),ts(n),rHDO(n),ustar,re,ssq, evap_HDO(n),&
-                         qbot(n),evap(n))
-        call wiso_flxoce(4,rbot(n),zbot(n),s18O(n),ts(n),r18O(n),ustar,re,ssq, evap_18O(n), &
-                         qbot(n),evap(n))
-
         !------------------------------------------------------------
         ! compute diagnositcs: 2m ref T & Q, 10m wind speed squared
         !------------------------------------------------------------
@@ -463,6 +455,24 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
         qref(n) =  qbot(n) - delq*fac
 
         duu10n(n) = u10n*u10n ! 10m wind speed squared
+
+        !------------------------------------------------------------
+        ! Add sea spray induced sensible and heat flux
+        ! XS 22/9/2022
+        !------------------------------------------------------------
+        call sea_spray_heat_flux(tref(n), rbot(n), qref(n), ts(n), pslv(n), ustar, hs(n), H_Lsp, H_Ssp)   
+        sen(n) = sen(n) + H_Ssp 
+        lat(n) = lat(n) + H_Lsp 
+        evap(n) = lat(n) / loc_latvap 
+
+       !---water isotope flux ---
+       ! XS moved this isotope part down to use the updated evap flux. 22/9/2022
+        call wiso_flxoce(2,rbot(n),zbot(n),s16O(n),ts(n),r16O(n),ustar,re,ssq,evap_16O(n), &
+                         qbot(n),evap(n))
+        call wiso_flxoce(3,rbot(n),zbot(n),sHDO(n),ts(n),rHDO(n),ustar,re,ssq, evap_HDO(n),&
+                         qbot(n),evap(n))
+        call wiso_flxoce(4,rbot(n),zbot(n),s18O(n),ts(n),r18O(n),ustar,re,ssq, evap_18O(n), &
+                         qbot(n),evap(n))
 
         !------------------------------------------------------------
         ! optional diagnostics, needed for water tracer fluxes (dcn)
@@ -2533,6 +2543,210 @@ zrt=zrft ! reference height for st.diagn.T,q
    trf=trf+.0098_R8*zrt
 
 end subroutine cor30a
+
+
+!===============================================================================
+! Computing the sensible and latent heat flux from sea spray
+! 
+! Reference: Andreas, E. L., Mahrt, L., & Vickers, D. (2015). An improved bulk 
+!      air‐sea surface flux algorithm, including spray‐mediated transfer.
+!      Quarterly Journal of the Royal Meteorological Society, 141, 642–654. 
+!      https://doi.org/10.1002/qj.2424
+!
+! XS 21/9/2022
+!===============================================================================
+!
+subroutine sea_spray_heat_flux(Ta, rhoa, qa, SST, SLP, ustar, hs, H_Lsp, H_Ssp)          
+
+implicit none
+
+! Constants
+real(R8), parameter :: s0 = 0.0347_R8        ! ocean reference salinity, 34.7 PSU
+real(R8), parameter :: rhow = 1000.0_R8      ! water density
+real(R8), parameter :: rhos = 1026.0_R8      ! seawater reference density
+real(R8), parameter :: R = 8.31446_R8        ! universal gas constant
+real(R8), parameter :: Lv = SHR_CONST_LATVAP ! latent heat of vaporization
+real(R8), parameter :: molwat = 18.0e-3_R8   ! molecular weight of water, 18 g/mol
+real(R8), parameter :: molsal = 58.44e-3_R8  ! molecular weight of NaCl, 58.44 g/mol
+real(R8), parameter :: sigmasw = 0.073486;   ! reference surface tension of pure water, N/m, 
+real(R8), parameter :: pi = SHR_CONST_PI
+real(R8), parameter :: nu = 2.0              ! number of ions into which a NaCl molecule dissociates  
+real(R8), parameter :: g = SHR_CONST_G 
+real(R8), parameter :: nua = 1.48e-5_R8      ! kinematic viscosity of air
+real(R8), parameter :: Cw = SHR_CONST_CPSW   ! specific heat of seawater 
+
+! Input/output variables
+real(R8), intent(in) :: Ta, rhoa, qa, SST, SLP, ustar, hs
+! air temperature (K), density (kg/m^3), specific humidity (kg/kg), sea surface temperature (K), 
+! sea-level pressure (Pa), frictional velocity (m/s), and significant wave height (m)
+
+real(R8), intent(out):: H_Lsp, H_Ssp  
+! latent and sensible heat flux (W/m^2)
+
+! Local variables
+real(R8) :: r0, esat, ewat, f, req0, x0, tol, xcur, mwat, m, Phis, y, gfun, dmwdr, &
+            dmdmw, dPhisdr, dydr, dgdr, req, alp, bet, coef_a, coef_b, coef_c, uf, &
+            drdt, d2rdt2, taur, delT, T_eq_100, tauf, r_tauf_50, VL, VS 
+integer  :: maxNumIter, itCounter
+
+
+! Find out r_eq first
+r0 = 50e-6_R8;     ! initial raidus, 50 microns
+msal = 4.0_R8/3.0_R8 * pi * rhow * (r0)**3.0_R8 * (s0 / (1.0_R8-s0))   ! mass of salt
+Dw = 2.11e-5_R8 * (Ta/273.15_R8)    ! bulk diffusivity of water; Ts is assumed 
+                                     ! to be close to Ta
+ka = 2.411e-2_R8 * (1.0_R8 + 3.309e-3_R8*(Ta-273.15_R8) - 1.441e-6_R8*(Ta-273.15_R8)**2.0_R8)
+                               ! bulk thermal conductivity, assuming
+                               ! Ts is close to Ta
+if (Ta > 273.15_R8) then                              
+    esat = 610.78_R8 * exp(17.27_R8*(Ta-273.15_R8) / (237.3_R8+(Ta-273.15_R8)))
+else
+    esat = 610.78_R8 * exp(21.875_R8*(Ta-273.15_R8) / (265.5_R8+(Ta-273.15_R8)))
+end if 
+
+! Limit the range of RH. Unfortunatly, Andreas did not valid these for RH<75%
+! Let's extend that range to 50%, for tau_r only. For T_eq, which
+! affects sensible heat, still limit it to 75% because that prediction
+! is probably less valid.
+
+**** Calculate RH ****
+ewat = SLP * qa / 0.622_R8 
+f = ewat / esat 
+f = min(f, 0.99_R8);
+f = max(f, 0.50_R8);  
+
+! Iteration to get r_eq
+req0 = 0.677485348947277e-1_R8*f**8 - 2.991237421807786e-1_R8*f**7 + &
+       5.617633542966016e-1_R8*f**6 - 5.844687234400729e-1_R8*f**5 + &
+       3.674400380428009e-1_R8*f**4 - 1.425458928194000e-1_R8*f**3 + &
+       0.332455605019179e-1_R8*f**2 - 0.042513769250897e-1_R8*f**1 + &
+       0.002542795162379e-1_R8
+x0 = req0/2.0_R8   ! using the fitting result as a first guess
+maxNumIter = 10
+itCounter = 0      ! Initialize iteration counter
+tol = 0.01_R8
+xcur = 2.0_R8*x0
+do while ( (abs(xcur/x0-1.0_R8)>tol)  .and.  (itCounter < maxNumIter) ) 
+    x0 = xcur
+
+    mwat = 4.0_R8/3.0_R8 * pi * rhow * xcur**3   ! mass of water
+    m = msal / (molwat * mwat)
+    Phis = 0.9270_R8 - 2.164e-2_R8*m + 3.486e-2_R8*m**2 - 5.956e-3_R8*m**3 + &
+           3.911e-4_R8*m**4
+    y = 2.0_R8*molwat*sigmasw / (R*Ta*rhow*xcur) - nu*Phis*msal*(molwat/molsal) / mwat
+    gfun = f-1.0_R8-y
+
+    dmwdr = 4.0_R8*rhow*pi*xcur**2
+    dmdmw = -msal/molwat/mwat**2
+    dPhisdr = dmdmw * dmwdr * (-2.164e-2_R8 + 2.0_R8*3.486e-2_R8*m - &
+              3.0_R8*5.956e-3_R8*m**2 + 4.0_R8*3.911e-4_R8*m**3)
+    dydr = -2.0_R8*molwat*sigmasw / (R*Ta*rhow*xcur**2)    &
+           -nu*msal*(molwat/molsal) / mwat * dPhisdr       & 
+           +nu*Phis*msal*(molwat/molsal) / mwat**2 * dmwdr
+    dgdr = -dydr
+
+    xcur = xcur - gfun/dgdr
+    itCounter = itCounter+1
+end do 
+req = xcur
+
+! Find out tau_r
+mwat = 4.0_R8/3.0_R8 * pi * rhow * r0**3
+m = msal / (molwat * mwat)
+Phis = 0.9270_R8 - 2.164e-2_R8*m + 3.486e-2_R8*m**2 - 5.956e-3_R8*m**3 + &
+       3.911e-4_R8*m**4
+y = 2.0_R8*molwat*sigmasw / (R*Ta*rhow*r0) - nu*Phis*msal*(molwat/molsal) / mwat
+gfun = f-1.0_R8-y
+drdt = gfun / r0 / (rhos*R*Ta/(Dw*molwat*esat) + &
+       rhos*Lv/(ka*Ta)*(Lv*molwat/(R*Ta) - 1.0_R8))
+
+dmwdr = 4.0_R8*rhow*pi*r0**2
+dmdmw = -msal/molwat/mwat**2
+dPhisdr = dmdmw * dmwdr * (-2.164e-2_R8 + 2.0_R8*3.486e-2_R8*m - &
+          3.0_R8*5.956e-3_R8*m**2 + 4.0_R8*3.911e-4_R8*m**3)
+dydr = -2.0_R8*molwat*sigmasw / (R*Ta*rhow*r0**2)      &
+       -nu*msal*(molwat/molsal) / mwat * dPhisdr       & 
+       +nu*Phis*msal*(molwat/molsal) / mwat**2 * dmwdr
+dgdr = -dydr
+d2rdt2 = 1.0_R8 / (rhos*R*Ta/(Dw*molwat*esat) + rhos*Lv/(ka*Ta)*(Lv*molwat/(R*Ta) - 1.0_R8)) * &
+        (-gfun/r0**2 + dgdr/r0) * drdt
+
+taur = (-drdt - sqrt(max(0.0, (3.0_R8*drdt**2 - 2.0_R8*(r0-req)**2*d2rdt2)))) / &
+       (d2rdt2 - 1.0_R8/(r0-req)*drdt**2) 
+if (f>0.9599_R8) then
+    taur = -(r0-req)/drdt * (-9.4013e2_R8 + 1.93607e3_R8*f - 9.955e2_R8*f**2)**(-1)
+end if 
+
+! Find out T_eq
+r0 = 100.0e-6    ! 100 microns
+
+mwat = 4.0_R8/3.0_R8 * pi * rhow * r0**3
+m = msal / (molwat * mwat)
+Phis = 0.9270_R8 - 2.164e-2_R8*m + 3.486e-2_R8*m**2 - 5.956e-3_R8*m**3 + &
+       3.911e-4_R8*m**4
+y = 2.0_R8*molwat*sigmasw / (R*Ta*rhow*r0) - nu*Phis*msal*(molwat/molsal) / mwat
+! further limit the range of RH
+f = max(f, 0.75_R8)    ! unfortunated, Andreas does not have reliable approximations 
+                    ! for lower RH. For temperature prediction, the
+                    ! error for low RH may be substantial.
+
+alp = 17.502_R8*240.97_R8*Ta / (240.97_R8+Ta-273.15_R8)**2
+bet = esat / Ta * Lv * molwat * Dw / (R*ka)
+
+ceof_a = bet / Ta**2 * (alp**2/2.0_R8 - alp*(2.0_R8*Ta+240.97_R8-273.15_R8) / &
+     (Ta+240.97_R8-273.15_R8) + 1.0_R8) * exp(y)
+ceof_b = 1.0_R8 + bet / Ta * (alp-1.0_R8) * exp(y)
+ceof_c = -bet * (f - exp(y))
+delT = (-coef_b + sqrt(coef_b**2 - 4.0_R8*ceof_a*coef_c)) / (2.0*coef_a)
+T_eq_100 = Ta + delT
+
+! Calculate terminal velocity 
+r0 = 50.0e-6_R8   ! initial radius
+! Iteration
+x0 = 0.128
+maxNumIter = 10
+itCounter = 0
+tol = 0.05_R8
+xcur = 2.0_R8*x0
+do while ( (abs(xcur/x0-1.0_R8)>tol)  &&  (itCounter < maxNumIter) ) 
+    x0 = xcur
+    gfun = (2.0_R8*g*r0**2*(rhos/rhoa - 1.0_R8)) / &
+           (9.0_R8*nua*((0.158_R8*((2.0_R8*r0*xcur)/nua)**(2.0_R8/3.0_R8)) + 1.0_R8)) - xcur
+    dgdr = -(158.0_R8*g*r0**3*(rhos/rhoa - 1.0_R8)) / &
+           (3375.0_R8*nua**2*((79.0_R8*((2.0_R8*r0*xcur)/nua)**(2.0_R8/3.0_R8))/500.0_R8 & 
+           + 1.0_R8)**2 * ((2.0_R8*r0*xcur)/nua)**(1.0_R8/3.0_R8)) - 1.0_R8
+    xcur = xcur - gfun / dgdr 
+    itCounter = itCounter+1
+end do 
+uf = xcur 
+
+tauf = hs / uf    ! falling time scale 
+
+! radius when it reaches the ocean surface
+r_tauf_50 = req + (r0 - req) * exp(-tauf/taur)
+
+! V_L
+if (ustar < 0.1358_R8) then 
+    VL = 1.76e-9_R8 
+else 
+    VL = 2.08e-7_R8 * ustar**(2.39_R8)
+end if 
+
+! Latent heat flux 
+H_Lsp = rhow * Lv * (1.0_R8 - (r_tauf_50 / r0)**3) * VL 
+
+! V_S 
+if (ustar < 0.148_R8) then 
+    VS = 3.92e-8_R8 
+else 
+    VS = 5.02-6_R8 * ustar**(2.54_R8)
+end if 
+
+! Sensible heat flux 
+H_Ssp = rhow * Cw * (SST - T_eq_100) * VS 
+
+end subroutine sea_spray_heat_flux
+
 
 
 !===============================================================================

@@ -1121,7 +1121,7 @@ contains
     else
 
        call shr_flux_atmocn (nloc_a2o , zbot , ubot, vbot, thbot, &
-            shum , shum_16O , shum_HDO, shum_18O, dens , tbot, uocn, vocn , &
+            shum , shum_16O , shum_HDO, shum_18O, dens , tbot, pslv, uocn, vocn , &
             tocn , emask, seq_flux_atmocn_minwind, &
             hs  , peakcp,  &     !  XS 20220726, significant wave height and peak wave phase speed
             sen , lat , lwup , &
@@ -1559,7 +1559,7 @@ contains
             duu10n,ustar, re  , ssq)
     else
        call shr_flux_atmocn (nloc , zbot , ubot, vbot, thbot, &
-            shum , shum_16O , shum_HDO, shum_18O, dens , tbot, uocn, vocn , &
+            shum , shum_16O , shum_HDO, shum_18O, dens , tbot, pslv, uocn, vocn , &
             tocn , emask, seq_flux_atmocn_minwind, &
             hs  , peakcp,    &    ! XS 20220726, significant wave height and peak wave phase speed
             sen , lat , lwup , &
