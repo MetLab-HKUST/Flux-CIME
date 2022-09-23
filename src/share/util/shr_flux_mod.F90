@@ -466,13 +466,13 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
         lat(n) = lat(n) + H_Lsp 
         evap(n) = lat(n) / loc_latvap 
 
-        if (isnan(H_Ssp) .or. (abs(H_Ssp)>1000)) then
-           write(s_logunit,*) H_Ssp, hs(n), ts(n), ustar, Teq
-           call shr_sys_abort('Potential error in sea spray flux: H_Ssp, hs, ts, ustar, Teq' // errMsg(sourcefile, __LINE__))
+        if (isnan(H_Ssp) .or. (abs(H_Ssp)>10000.0)) then
+           write(s_logunit,*) H_Ssp, hs(n), ts(n), tref(n), rbot(n), qref(n), pslv(n), ustar, Teq
+           call shr_sys_abort('Potential error in sea spray flux: H_Ssp, hs, ts, tref, rbot, qref, pslv, ustar, Teq' // errMsg(sourcefile, __LINE__))
         end if
-        if (isnan(H_Lsp) .or. (abs(H_Lsp)>1000)) then
-           write(s_logunit,*) H_Lsp, hs(n), ts(n), ustar, rtau
-           call shr_sys_abort('Potential error in sea spray flux: H_Lsp, hs, ts, ustar, rtau' // errMsg(sourcefile, __LINE__))
+        if (isnan(H_Lsp) .or. (abs(H_Lsp)>10000.0)) then
+           write(s_logunit,*) H_Lsp, hs(n), ts(n), tref(n), rbot(n), qref(n), pslv(n), ustar, Teq, rtau
+           call shr_sys_abort('Potential error in sea spray flux: H_Lsp, hs, ts, tref, rbot, qref, pslv, ustar, Teq, rtau' // errMsg(sourcefile, __LINE__))
         end if
         
        !---water isotope flux ---
@@ -2691,6 +2691,7 @@ subroutine sea_spray_heat_flux(Ta, rhoa, qa, SST, SLP, ustar, hs, Teq, rtau, H_L
     r0 = 100.0e-6    ! 100 microns
 
     mwat = 4.0_R8/3.0_R8 * pi * rhow * r0**3
+    msal = 4.0_R8/3.0_R8 * pi * rhow * (r0)**3.0_R8 * (s0 / (1.0_R8-s0))   ! mass of salt
     m = msal / (molwat * mwat)
     Phis = 0.9270_R8 - 2.164e-2_R8*m + 3.486e-2_R8*m**2 - 5.956e-3_R8*m**3 + &
            3.911e-4_R8*m**4
