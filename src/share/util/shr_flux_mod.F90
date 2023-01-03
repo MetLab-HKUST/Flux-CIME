@@ -2736,6 +2736,8 @@ subroutine sea_spray_heat_flux(Ta, rhoa, qa, SST, SLP, ustar, hs, Teq, rtau, H_L
 
     ! radius when it reaches the ocean surface
     r_tauf_50 = req + (r0 - req) * exp(-tauf/taur)
+    r_tauf_50 = min(r_tau_50, 10.0_R8*r0)  ! this line is added to avoid occasionally 
+                                           ! too large rtau due to errors in the iteration
     rtau = r_tauf_50
     
     ! V_L
