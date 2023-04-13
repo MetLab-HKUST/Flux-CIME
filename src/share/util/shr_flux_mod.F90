@@ -462,8 +462,9 @@ SUBROUTINE shr_flux_atmOcn(nMax  ,zbot  ,ubot  ,vbot  ,thbot ,   &
         ! XS 22/9/2022
         !------------------------------------------------------------
         call sea_spray_heat_flux(tref(n), rbot(n), qref(n), ts(n), pslv(n), ustar, hs(n), Teq, rtau, H_Lsp, H_Ssp)   
-        sen(n) = sen(n) + H_Ssp 
-        lat(n) = lat(n) + H_Lsp 
+        sen(n) = sen(n) - H_Ssp    
+        lat(n) = lat(n) - H_Lsp 
+        ! XS: I think there should be a negative sign, instead of positve, here for H_Ssp and H_Lsp; 20230413
         evap(n) = lat(n) / loc_latvap 
 
         if (isnan(H_Ssp) .or. (abs(H_Ssp)>10000.0)) then
@@ -2736,8 +2737,8 @@ subroutine sea_spray_heat_flux(Ta, rhoa, qa, SST, SLP, ustar, hs, Teq, rtau, H_L
 
     ! radius when it reaches the ocean surface
     r_tauf_50 = req + (r0 - req) * exp(-tauf/taur)
-    r_tauf_50 = min(r_tau_50, 2.5_R8*r0)  ! this line is added to avoid occasionally 
-                                           ! too large rtau due to errors in the iteration
+    r_tauf_50 = min(r_tauf_50, 2.5_R8*r0)    ! if it grows, it should not be too much 
+                       ! larger than r0. This is an ad-hoc fix for occasional breakdown
     rtau = r_tauf_50
     
     ! V_L
