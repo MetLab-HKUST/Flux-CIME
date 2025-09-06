@@ -4,4 +4,4 @@ Modified Common Infrastructure for Modeling the Earth (CIME) of CESM2 with sea-s
 
 Cite as:
 
-Shi, X., Q. Li, D. V. Lestari, S. Lin, and. H. Su, 2025: The Effects of Sea-State-Dependent Surface Fluxes on CESM2 Climate Simulations, Journal of Advances in Modeling Earth Systems, under review.
+Shi, X., Q. Li, D. V. Lestari, S. Lin, and. H. Su, 2025: The Effects of Sea-State-Dependent Surface Fluxes on CESM2 Climate Simulations, _Journal of Advances in Modeling Earth Systems_, under review.
