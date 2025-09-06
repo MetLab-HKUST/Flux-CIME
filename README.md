@@ -1,6 +1,6 @@
 # Modified CIME in CESM2
 
-Modified Common Infrastructure for Modeling the Earth (CIME) of CESM2 with sea-state dependent surface fluxes. The CAM and WW3 with necessary changes are at https://github.com/MetLab-HKUST/Flux-CAM and https://github.com/MetLab-HKUST/Flux-WW3
+Modified Common Infrastructure for Modeling the Earth (CIME) of CESM2 with sea-state dependent surface fluxes, based on CESM2 v2.2.2. The CAM and WW3 with necessary changes are at https://github.com/MetLab-HKUST/Flux-CAM and https://github.com/MetLab-HKUST/Flux-WW3
 
 Cite as:
 
